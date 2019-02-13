@@ -50,18 +50,12 @@ class ClassAttributesOrderChecker:
     def __init__(self, tree, filename: str):
         self.filename = filename
         self.tree = tree
-
-    @classmethod
-    def add_options(cls, parser) -> None:
-        parser.add_option(
-            '--use-class-attributes-order-strict-mode',
-            action='store_true',
-        )
+        self.use_strict_mode = True
 
     def run(self) -> Generator[Tuple[int, int, str, type], None, None]:
         weight_info = self.STRICT_NODE_TYPE_WEIGHTS if self.use_strict_mode else self.NON_STRICT_NODE_TYPE_WEIGHTS
         classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
-        errors = []
+        errors: List[Tuple[int, int, str]] = []
         for class_def in classes:
             model_parts_info = self._get_model_parts_info(class_def, weight_info)
             errors += self._get_ordering_errors(model_parts_info)
@@ -69,6 +63,12 @@ class ClassAttributesOrderChecker:
         for lineno, col_offset, error_msg in errors:
             yield lineno, col_offset, error_msg, type(self)
 
+    @classmethod
+    def add_options(cls, parser) -> None:
+        parser.add_option(
+            '--use-class-attributes-order-strict-mode',
+            action='store_true',
+        )
 
     @classmethod
     def parse_options(cls, options) -> None:
@@ -129,23 +129,31 @@ class ClassAttributesOrderChecker:
         return 'field'
 
     @classmethod
-    def _get_ordering_errors(cls, model_parts_info) -> List[str]:
+    def _get_ordering_errors(cls, model_parts_info) -> List[Tuple[int, int, str]]:
         errors = []
         for model_part, next_model_part in zip(model_parts_info, model_parts_info[1:]):
             if (
                 model_part['model_name'] == next_model_part['model_name']
                 and model_part['weight'] > next_model_part['weight']
             ):
-                errors.append((model_part['node'].lineno, model_part['node'].col_offset, 'CCE001 {0}.{1} should be after {0}.{2}'.format(
-                    model_part['model_name'],
-                    cls._get_node_name(model_part['node'], model_part['type']),
-                    cls._get_node_name(next_model_part['node'], next_model_part['type']),
-                )))
-            if model_part['type'] in ['expression', 'if']:
-                errors.append((model_part['node'].lineno, model_part['node'].col_offset, 'CCE002 Class level expression detected model {0}, line {1}'.format(
-                    model_part['model_name'],
+                errors.append((
                     model_part['node'].lineno,
-                )))
+                    model_part['node'].col_offset,
+                    'CCE001 {0}.{1} should be after {0}.{2}'.format(
+                        model_part['model_name'],
+                        cls._get_node_name(model_part['node'], model_part['type']),
+                        cls._get_node_name(next_model_part['node'], next_model_part['type']),
+                    ),
+                ))
+            if model_part['type'] in ['expression', 'if']:
+                errors.append((
+                    model_part['node'].lineno,
+                    model_part['node'].col_offset,
+                    'CCE002 Class level expression detected model {0}, line {1}'.format(
+                        model_part['model_name'],
+                        model_part['node'].lineno,
+                    ),
+                ))
         return errors
 
     @staticmethod
