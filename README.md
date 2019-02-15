@@ -62,7 +62,7 @@ test.py:5:5: CCE001 User.fetch_info_from_crm should be after User.LOGIN_FIELD
 test.py:15:5: CCE002 Class level expression detected model UserNode, line 15
 ```
 
-Tested on Python 3.7.2 and flake8 3.7.5.
+Tested on Python 3.6 and 3.7.2 and flake8 3.7.5.
 
 
 ## Error codes
