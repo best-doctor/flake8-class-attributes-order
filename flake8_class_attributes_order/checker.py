@@ -131,9 +131,10 @@ class ClassAttributesOrderChecker:
     @classmethod
     def _get_ordering_errors(cls, model_parts_info) -> List[Tuple[int, int, str]]:
         errors = []
-        for model_part, next_model_part in zip(model_parts_info, model_parts_info[1:]):
+        for model_part, next_model_part in zip(model_parts_info, model_parts_info[1:] + [None]):
             if (
-                model_part['model_name'] == next_model_part['model_name']
+                next_model_part
+                and model_part['model_name'] == next_model_part['model_name']
                 and model_part['weight'] > next_model_part['weight']
             ):
                 errors.append((
@@ -149,7 +150,7 @@ class ClassAttributesOrderChecker:
                 errors.append((
                     model_part['node'].lineno,
                     model_part['node'].col_offset,
-                    'CCE002 Class level expression detected model {0}, line {1}'.format(
+                    'CCE002 Class level expression detected in model {0}, line {1}'.format(
                         model_part['model_name'],
                         model_part['node'].lineno,
                     ),
