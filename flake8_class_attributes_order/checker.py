@@ -15,6 +15,7 @@ class ClassAttributesOrderChecker:
         'outer_field': 25,
         'if': 26,
         'expression': 27,
+        'init_method': 28,
         'str_method': 31,
         'save_method': 32,
         'delete_method': 33,
@@ -34,6 +35,7 @@ class ClassAttributesOrderChecker:
         'outer_field': 25,
         'if': 26,
         'expression': 27,
+        'init_method': 28,
         'str_method': 31,
         'save_method': 32,
         'delete_method': 33,
@@ -52,16 +54,55 @@ class ClassAttributesOrderChecker:
         self.tree = tree
         self.use_strict_mode = True
 
-    def run(self) -> Generator[Tuple[int, int, str, type], None, None]:
-        weight_info = self.STRICT_NODE_TYPE_WEIGHTS if self.use_strict_mode else self.NON_STRICT_NODE_TYPE_WEIGHTS
-        classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
-        errors: List[Tuple[int, int, str]] = []
-        for class_def in classes:
-            model_parts_info = self._get_model_parts_info(class_def, weight_info)
-            errors += self._get_ordering_errors(model_parts_info)
+    @staticmethod
+    def _get_funcdef_type(child_node) -> str:
+        methods_names_to_types_map = {
+            '__str__': 'str_method',
+            '__init__': 'init_method',
+            'save': 'save_method',
+            'delete': 'delete_method',
+        }
+        decorator_names_to_types_map = {
+            'property': 'property_method',
+            'staticmethod': 'static_method',
+            'classmethod': 'class_method',
+        }
+        for decorator_info in child_node.decorator_list:
+            if (
+                isinstance(decorator_info, ast.Name)
+                and decorator_info.id in decorator_names_to_types_map
+            ):
+                return decorator_names_to_types_map[decorator_info.id]
+        if child_node.name in methods_names_to_types_map:
+            return methods_names_to_types_map[child_node.name]
+        if child_node.name.startswith('_'):
+            return 'private_method'
+        return 'method'
 
-        for lineno, col_offset, error_msg in errors:
-            yield lineno, col_offset, error_msg, type(self)
+    @staticmethod
+    def _is_caps_lock_str(var_name: str) -> bool:
+        return var_name.upper() == var_name
+
+    @staticmethod
+    def _get_node_name(node, node_type: str):
+        name_getters_by_type = [
+            ('docstring', lambda n: 'docstring'),
+            ('meta_class', lambda n: 'Meta'),
+            ('constant', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
+            (
+                'field',
+                lambda n: n.target.id if isinstance(n, ast.AnnAssign) else (  # type: ignore
+                    n.targets[0].id if isinstance(n.targets[0], ast.Name) else n.targets[0].attr
+                ),
+            ),
+            ('method', lambda n: n.name),
+            ('nested_class', lambda n: n.name),
+            ('expression', lambda n: '<class_level_expression>'),
+            ('if', lambda n: 'if ...'),
+        ]
+        for type_postfix, name_getter in name_getters_by_type:
+            if node_type.endswith(type_postfix):
+                return name_getter(node)
 
     @classmethod
     def add_options(cls, parser) -> None:
@@ -157,51 +198,13 @@ class ClassAttributesOrderChecker:
                 ))
         return errors
 
-    @staticmethod
-    def _get_funcdef_type(child_node) -> str:
-        methods_names_to_types_map = {
-            '__str__': 'str_method',
-            'save': 'save_method',
-            'delete': 'delete_method',
-        }
-        decorator_names_to_types_map = {
-            'property': 'property_method',
-            'staticmethod': 'static_method',
-            'classmethod': 'class_method',
-        }
-        for decorator_info in child_node.decorator_list:
-            if (
-                isinstance(decorator_info, ast.Name)
-                and decorator_info.id in decorator_names_to_types_map
-            ):
-                return decorator_names_to_types_map[decorator_info.id]
-        if child_node.name in methods_names_to_types_map:
-            return methods_names_to_types_map[child_node.name]
-        if child_node.name.startswith('_'):
-            return 'private_method'
-        return 'method'
+    def run(self) -> Generator[Tuple[int, int, str, type], None, None]:
+        weight_info = self.STRICT_NODE_TYPE_WEIGHTS if self.use_strict_mode else self.NON_STRICT_NODE_TYPE_WEIGHTS
+        classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
+        errors: List[Tuple[int, int, str]] = []
+        for class_def in classes:
+            model_parts_info = self._get_model_parts_info(class_def, weight_info)
+            errors += self._get_ordering_errors(model_parts_info)
 
-    @staticmethod
-    def _is_caps_lock_str(var_name: str) -> bool:
-        return var_name.upper() == var_name
-
-    @staticmethod
-    def _get_node_name(node, node_type: str):
-        name_getters_by_type = [
-            ('docstring', lambda n: 'docstring'),
-            ('meta_class', lambda n: 'Meta'),
-            ('constant', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
-            (
-                'field',
-                lambda n: n.target.id if isinstance(n, ast.AnnAssign) else (  # type: ignore
-                    n.targets[0].id if isinstance(n.targets[0], ast.Name) else n.targets[0].attr
-                ),
-            ),
-            ('method', lambda n: n.name),
-            ('nested_class', lambda n: n.name),
-            ('expression', lambda n: '<class_level_expression>'),
-            ('if', lambda n: 'if ...'),
-        ]
-        for type_postfix, name_getter in name_getters_by_type:
-            if node_type.endswith(type_postfix):
-                return name_getter(node)
+        for lineno, col_offset, error_msg in errors:
+            yield lineno, col_offset, error_msg, type(self)
