@@ -13,11 +13,11 @@ If django model fields are detected, the validator can detect,
 if the field is link to another table (foreign key, generic key, etc) or not.
 
 After resolving each attribute type, validator checks attributes order.
-For example, here are default methods order: `__str__`, `save`, `delete`, `@property`,
+For example, here are default methods order: `__init__`, `__str__`, `save`, `delete`, `@property`,
 `@staticmethod`, `@classmethod`, other methods, underscored methods.
 If the order is broken, validator will report on it.
 
-Besides methods, the validator checks other attributes methods: docstrions, nested classes,
+Besides methods, the validator checks other attributes methods: docstrings, nested classes,
 constants, attributes, and so on.
 
 Also validator checks, if class has no class level logic and report if any. Here is an example:
@@ -45,7 +45,7 @@ class User:
     def fetch_info_from_crm(self):
         pass
 
-    LOGIN_FIELD = 'email'  # wtf? this should on top of class definition!
+    LOGIN_FIELD = 'email'  # wtf? this should be on top of class definition!
 
 
 class UserNode:
