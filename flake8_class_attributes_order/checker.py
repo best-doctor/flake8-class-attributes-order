@@ -52,7 +52,7 @@ class ClassAttributesOrderChecker:
     def __init__(self, tree, filename: str):
         self.filename = filename
         self.tree = tree
-        self.use_strict_mode = True
+        self.use_strict_mode = False
 
     @staticmethod
     def _get_funcdef_type(child_node) -> str:
