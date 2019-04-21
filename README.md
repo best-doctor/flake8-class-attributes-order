@@ -1,4 +1,4 @@
-# flake8-annotations-complexity
+# flake8-class-attributes-order
 
 [![Build Status](https://travis-ci.org/best-doctor/flake8-class-attributes-order.svg?branch=master)](https://travis-ci.org/best-doctor/flake8-class-attributes-order)
 [![Maintainability](https://api.codeclimate.com/v1/badges/28b7cd9d0714ec4b93a3/maintainability)](https://codeclimate.com/github/best-doctor/flake8-class-attributes-order/maintainability)
