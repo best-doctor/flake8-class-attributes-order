@@ -134,7 +134,7 @@ class ClassAttributesOrderChecker:
             (ast.If, lambda n: 'if'),
             (ast.Pass, lambda n: 'pass'),
             ((ast.Assign, ast.AnnAssign), lambda n: cls._get_assighment_type(n)),
-            (ast.FunctionDef, lambda n: cls._get_funcdef_type(n)),
+            ((ast.FunctionDef, ast.AsyncFunctionDef), lambda n: cls._get_funcdef_type(n)),
         ]
         for type_or_type_tuple, type_getter in direct_node_types_mapping:
             if isinstance(child_node, type_or_type_tuple):  # type: ignore
