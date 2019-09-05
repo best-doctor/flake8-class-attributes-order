@@ -110,6 +110,7 @@ class ClassAttributesOrderChecker:
         parser.add_option(
             '--use-class-attributes-order-strict-mode',
             action='store_true',
+            parse_from_config=True,
         )
 
     @classmethod
