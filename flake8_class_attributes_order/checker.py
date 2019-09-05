@@ -49,10 +49,11 @@ class ClassAttributesOrderChecker:
     name = 'flake8-class-attributes-order'
     version = version
 
+    use_strict_mode = False
+
     def __init__(self, tree, filename: str):
         self.filename = filename
         self.tree = tree
-        self.use_strict_mode = False
 
     @staticmethod
     def _get_funcdef_type(child_node) -> str:
@@ -199,7 +200,11 @@ class ClassAttributesOrderChecker:
         return errors
 
     def run(self) -> Generator[Tuple[int, int, str, type], None, None]:
-        weight_info = self.STRICT_NODE_TYPE_WEIGHTS if self.use_strict_mode else self.NON_STRICT_NODE_TYPE_WEIGHTS
+        weight_info = (
+            self.STRICT_NODE_TYPE_WEIGHTS
+            if ClassAttributesOrderChecker.use_strict_mode
+            else self.NON_STRICT_NODE_TYPE_WEIGHTS
+        )
         classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
         errors: List[Tuple[int, int, str]] = []
         for class_def in classes:
