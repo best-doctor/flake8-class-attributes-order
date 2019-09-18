@@ -16,6 +16,7 @@ class ClassAttributesOrderChecker:
         'if': 26,
         'expression': 27,
         'init_method': 28,
+        'post_init_method': 29,
         'str_method': 31,
         'save_method': 32,
         'delete_method': 33,
@@ -36,6 +37,7 @@ class ClassAttributesOrderChecker:
         'if': 26,
         'expression': 27,
         'init_method': 28,
+        'post_init_method': 29,
         'str_method': 31,
         'save_method': 32,
         'delete_method': 33,
@@ -60,11 +62,13 @@ class ClassAttributesOrderChecker:
         methods_names_to_types_map = {
             '__str__': 'str_method',
             '__init__': 'init_method',
+            '__post_init__': 'post_init_method',
             'save': 'save_method',
             'delete': 'delete_method',
         }
         decorator_names_to_types_map = {
             'property': 'property_method',
+            'cached_property': 'property_method',
             'staticmethod': 'static_method',
             'classmethod': 'class_method',
         }
