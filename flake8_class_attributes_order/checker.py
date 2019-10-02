@@ -11,28 +11,26 @@ class ClassAttributesOrderChecker:
         'meta_class': 2,
         'nested_class': 3,
 
-        'constant': 4,
-        'field': 5,
-        'outer_field': 6,
-        'if': 7,
-        'expression': 8,
+        'attribute': 4,
+        'if': 5,
+        'expression': 6,
 
-        '__new__': 9,
-        '__init__': 10,
-        '__post_init__': 11,
-        'magic_method': 12,
+        '__new__': 7,
+        '__init__': 8,
+        '__post_init__': 9,
+        'magic_method': 10,
 
-        'property_method': 13,
-        'private_property_method': 13,
+        'property_method': 11,
+        'private_property_method': 11,
 
-        'static_method': 14,
-        'private_static_method': 14,
+        'static_method': 12,
+        'private_static_method': 12,
 
-        'class_method': 15,
-        'private_class_method': 15,
+        'class_method': 13,
+        'private_class_method': 13,
 
-        'method': 16,
-        'private_method': 17,
+        'method': 14,
+        'private_method': 15,
     }
 
     STRICT_NODE_TYPE_WEIGHTS = {
@@ -41,26 +39,24 @@ class ClassAttributesOrderChecker:
         'meta_class': 2,
         'nested_class': 3,
 
-        'constant': 4,
-        'field': 5,
-        'outer_field': 6,
-        'if': 7,
-        'expression': 8,
+        'attribute': 4,
+        'if': 5,
+        'expression': 6,
 
-        '__new__': 9,
-        '__init__': 10,
-        '__post_init__': 11,
-        'magic_method': 12,
+        '__new__': 7,
+        '__init__': 8,
+        '__post_init__': 9,
+        'magic_method': 10,
 
-        'property_method': 13,
-        'static_method': 14,
-        'class_method': 15,
-        'method': 16,
+        'property_method': 11,
+        'static_method': 12,
+        'class_method': 13,
+        'method': 14,
 
-        'private_property_method': 17,
-        'private_static_method': 18,
-        'private_class_method': 19,
-        'private_method': 20,
+        'private_property_method': 15,
+        'private_static_method': 16,
+        'private_class_method': 17,
+        'private_method': 18,
     }
 
     name = 'flake8-class-attributes-order'
@@ -112,13 +108,7 @@ class ClassAttributesOrderChecker:
     def _get_node_name(node, node_type: str):
         name_getters_by_type = [
             ('meta_class', lambda n: 'Meta'),
-            ('constant', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
-            (
-                'field',
-                lambda n: n.target.id if isinstance(n, ast.AnnAssign) else (  # type: ignore
-                    n.targets[0].id if isinstance(n.targets[0], ast.Name) else n.targets[0].attr
-                ),
-            ),
+            ('attribute', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
             ('method', lambda n: n.name),
             ('nested_class', lambda n: n.name),
             ('expression', lambda n: '<class_level_expression>'),
@@ -181,18 +171,7 @@ class ClassAttributesOrderChecker:
         assignee_node = child_node.target if isinstance(child_node, ast.AnnAssign) else child_node.targets[0]
         if isinstance(assignee_node, ast.Subscript):
             return 'expression'
-        if isinstance(assignee_node, ast.Name):
-            return 'constant'
-        if isinstance(child_node.value, ast.Call):
-            dump_callable = ast.dump(child_node.value.func)
-            if (
-                'ForeignKey' in dump_callable
-                or 'ManyToManyField' in dump_callable
-                or 'OneToOneField' in dump_callable
-                or 'GenericRelation' in dump_callable
-            ):
-                return 'outer_field'
-        return 'field'
+        return 'attribute'
 
     @classmethod
     def _get_ordering_errors(cls, model_parts_info) -> List[Tuple[int, int, str]]:
