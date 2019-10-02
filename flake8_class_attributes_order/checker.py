@@ -109,10 +109,6 @@ class ClassAttributesOrderChecker:
         return 'method'
 
     @staticmethod
-    def _is_caps_lock_str(var_name: str) -> bool:
-        return var_name.upper() == var_name
-
-    @staticmethod
     def _get_node_name(node, node_type: str):
         name_getters_by_type = [
             ('meta_class', lambda n: 'Meta'),
@@ -131,7 +127,6 @@ class ClassAttributesOrderChecker:
         for type_postfix, name_getter in name_getters_by_type:
             if node_type.endswith(type_postfix):
                 return name_getter(node)
-            return node.name
 
     @classmethod
     def add_options(cls, parser) -> None:
@@ -186,7 +181,7 @@ class ClassAttributesOrderChecker:
         assignee_node = child_node.target if isinstance(child_node, ast.AnnAssign) else child_node.targets[0]
         if isinstance(assignee_node, ast.Subscript):
             return 'expression'
-        if isinstance(assignee_node, ast.Name) and cls._is_caps_lock_str(assignee_node.id):
+        if isinstance(assignee_node, ast.Name):
             return 'constant'
         if isinstance(child_node.value, ast.Call):
             dump_callable = ast.dump(child_node.value.func)
