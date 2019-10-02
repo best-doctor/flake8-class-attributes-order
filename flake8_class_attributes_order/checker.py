@@ -5,47 +5,62 @@ from flake8_class_attributes_order import __version__ as version
 
 
 class ClassAttributesOrderChecker:
-    STRICT_NODE_TYPE_WEIGHTS = {
-        'docstring': 0,
-        'pass': 1,
-        'meta_class': 10,
-        'nested_class': 11,
-        'constant': 15,
-        'field': 20,
-        'outer_field': 25,
-        'if': 26,
-        'expression': 27,
-        'init_method': 28,
-        'post_init_method': 29,
-        'str_method': 31,
-        'save_method': 32,
-        'delete_method': 33,
-        'property_method': 34,
-        'static_method': 35,
-        'class_method': 36,
-        'method': 37,
-        'private_method': 38,
-    }
     NON_STRICT_NODE_TYPE_WEIGHTS = {
         'docstring': 0,
         'pass': 1,
-        'meta_class': 10,
-        'nested_class': 11,
-        'constant': 15,
-        'field': 20,
-        'outer_field': 25,
-        'if': 26,
-        'expression': 27,
-        'init_method': 28,
-        'post_init_method': 29,
-        'str_method': 31,
-        'save_method': 32,
-        'delete_method': 33,
-        'property_method': 35,
-        'static_method': 35,
-        'class_method': 35,
-        'method': 35,
-        'private_method': 35,
+        'meta_class': 2,
+        'nested_class': 3,
+
+        'constant': 4,
+        'field': 5,
+        'outer_field': 6,
+        'if': 7,
+        'expression': 8,
+
+        '__new__': 9,
+        '__init__': 10,
+        '__post_init__': 11,
+        'magic_method': 12,
+
+        'property_method': 13,
+        'private_property_method': 13,
+
+        'static_method': 14,
+        'private_static_method': 14,
+
+        'class_method': 15,
+        'private_class_method': 15,
+
+        'method': 16,
+        'private_method': 17,
+    }
+
+    STRICT_NODE_TYPE_WEIGHTS = {
+        'docstring': 0,
+        'pass': 1,
+        'meta_class': 2,
+        'nested_class': 3,
+
+        'constant': 4,
+        'field': 5,
+        'outer_field': 6,
+        'if': 7,
+        'expression': 8,
+
+        '__new__': 9,
+        '__init__': 10,
+        '__post_init__': 11,
+        'magic_method': 12,
+
+        'property_method': 13,
+        'static_method': 14,
+        'class_method': 15,
+        'method': 16,
+
+        'private_property_method': 17,
+        'private_static_method': 18,
+        'private_class_method': 19,
+        'private_method': 20,
     }
 
     name = 'flake8-class-attributes-order'
@@ -60,26 +75,35 @@ class ClassAttributesOrderChecker:
     @staticmethod
     def _get_funcdef_type(child_node) -> str:
         methods_names_to_types_map = {
-            '__str__': 'str_method',
-            '__init__': 'init_method',
-            '__post_init__': 'post_init_method',
-            'save': 'save_method',
-            'delete': 'delete_method',
+            '__new__': '__new__',
+            '__init__': '__init__',
+            '__post_init__': '__post_init__',
         }
         decorator_names_to_types_map = {
             'property': 'property_method',
             'cached_property': 'property_method',
             'staticmethod': 'static_method',
             'classmethod': 'class_method',
+
+            'private_property': 'private_property_method',
+            'private_cached_property': 'private_property_method',
+            'private_staticmethod': 'private_static_method',
+            'private_classmethod': 'private_class_method',
         }
         for decorator_info in child_node.decorator_list:
             if (
                 isinstance(decorator_info, ast.Name)
                 and decorator_info.id in decorator_names_to_types_map
             ):
+
+                if child_node.name.startswith('_'):
+                    return decorator_names_to_types_map[f'private_{decorator_info.id}']
+
                 return decorator_names_to_types_map[decorator_info.id]
         if child_node.name in methods_names_to_types_map:
             return methods_names_to_types_map[child_node.name]
+        if child_node.name.startswith('__') and child_node.name.endswith('__'):
+            return 'magic_method'
         if child_node.name.startswith('_'):
             return 'private_method'
         return 'method'
