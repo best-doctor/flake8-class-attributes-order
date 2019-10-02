@@ -74,10 +74,10 @@ class ClassAttributesOrderChecker:
 
     @staticmethod
     def _get_funcdef_type(child_node) -> str:
-        methods_names_to_types_map = {
-            '__new__': '__new__',
-            '__init__': '__init__',
-            '__post_init__': '__post_init__',
+        special_magic_methods = {
+            '__new__',
+            '__init__',
+            '__post_init__',
         }
         decorator_names_to_types_map = {
             'property': 'property_method',
@@ -100,8 +100,8 @@ class ClassAttributesOrderChecker:
                     return decorator_names_to_types_map[f'private_{decorator_info.id}']
 
                 return decorator_names_to_types_map[decorator_info.id]
-        if child_node.name in methods_names_to_types_map:
-            return methods_names_to_types_map[child_node.name]
+        if child_node.name in special_magic_methods:
+            return child_node.name
         if child_node.name.startswith('__') and child_node.name.endswith('__'):
             return 'magic_method'
         if child_node.name.startswith('_'):
@@ -115,7 +115,6 @@ class ClassAttributesOrderChecker:
     @staticmethod
     def _get_node_name(node, node_type: str):
         name_getters_by_type = [
-            ('docstring', lambda n: 'docstring'),
             ('meta_class', lambda n: 'Meta'),
             ('constant', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
             (
@@ -132,6 +131,7 @@ class ClassAttributesOrderChecker:
         for type_postfix, name_getter in name_getters_by_type:
             if node_type.endswith(type_postfix):
                 return name_getter(node)
+            return node.name
 
     @classmethod
     def add_options(cls, parser) -> None:
