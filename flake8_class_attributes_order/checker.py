@@ -117,6 +117,7 @@ class ClassAttributesOrderChecker:
     @staticmethod
     def _get_node_name(node, node_type: str):
         name_getters_by_type = [
+            ('docstring', lambda n: 'docstring'),
             ('meta_class', lambda n: 'Meta'),
             ('constant', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
             (
