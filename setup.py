@@ -25,6 +25,7 @@ setup(
     long_description=get_long_description(),
     long_description_content_type='text/markdown',
     packages=find_packages(),
+    python_requires='>=3.7',
     include_package_data=True,
     keywords='flake8',
     version=get_version(),
