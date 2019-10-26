@@ -1,6 +1,19 @@
 DEBUG = True
 
 
+def bar():
+    pass
+
+
+def foobar():
+    return 1, 2
+
+
+class Foo:
+    bar()
+    var1, var2 = foobar()
+
+
 class User:
     def fetch_info_from_crm(self):
         pass

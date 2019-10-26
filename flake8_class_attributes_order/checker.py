@@ -1,5 +1,5 @@
 import ast
-from typing import Generator, Tuple, List, Dict
+from typing import Generator, Tuple, List, Dict, Union
 
 from flake8_class_attributes_order import __version__ as version
 
@@ -114,18 +114,13 @@ class ClassAttributesOrderChecker:
     def _is_caps_lock_str(var_name: str) -> bool:
         return var_name.upper() == var_name
 
-    @staticmethod
-    def _get_node_name(node, node_type: str):
+    @classmethod
+    def _get_node_name(cls, node, node_type: str):
         name_getters_by_type = [
             ('docstring', lambda n: 'docstring'),
             ('meta_class', lambda n: 'Meta'),
             ('constant', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
-            (
-                'field',
-                lambda n: n.target.id if isinstance(n, ast.AnnAssign) else (  # type: ignore
-                    n.targets[0].id if isinstance(n.targets[0], ast.Name) else n.targets[0].attr
-                ),
-            ),
+            ('field', cls.__get_name_for_field_node_type),
             ('method', lambda n: n.name),
             ('nested_class', lambda n: n.name),
             ('expression', lambda n: '<class_level_expression>'),
@@ -134,6 +129,20 @@ class ClassAttributesOrderChecker:
         for type_postfix, name_getter in name_getters_by_type:
             if node_type.endswith(type_postfix):
                 return name_getter(node)
+
+    @staticmethod
+    def __get_name_for_field_node_type(node: Union[ast.Assign, ast.AnnAssign]) -> str:
+        default_name = '<class_level_assignment>'
+        if isinstance(node, ast.AnnAssign):
+            return node.target.id if isinstance(node.target, ast.Name) else default_name
+        elif isinstance(node.targets[0], ast.Name):
+            return node.targets[0].id
+        elif hasattr(node.targets[0], 'attr'):
+            return node.targets[0].attr  # type: ignore
+        elif isinstance(node.targets[0], ast.Tuple):
+            return ', '.join([e.id for e in node.targets[0].elts if isinstance(e, ast.Name)])
+        else:
+            return default_name
 
     @classmethod
     def add_options(cls, parser) -> None:
