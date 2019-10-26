@@ -17,3 +17,4 @@ flake8-per-file-ignores==0.6
 flake8-todo==0.7
 mypy==0.660
 pydocstyle==3.0.0
+typing-extensions==3.7.4

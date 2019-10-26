@@ -1,11 +1,16 @@
+from __future__ import annotations
 import ast
-from typing import Generator, Tuple, List, Dict, Union
+from typing import Generator, Tuple, List, Union, Mapping, TYPE_CHECKING
+
 
 from flake8_class_attributes_order import __version__ as version
 
+if TYPE_CHECKING:
+    from typing_extensions import Final
+
 
 class ClassAttributesOrderChecker:
-    NON_STRICT_NODE_TYPE_WEIGHTS = {
+    NON_STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
         'docstring': 0,
         'pass': 1,
         'meta_class': 2,
@@ -21,22 +26,23 @@ class ClassAttributesOrderChecker:
         '__new__': 9,
         '__init__': 10,
         '__post_init__': 11,
-        'magic_method': 12,
+        '__str__': 12,
 
-        'property_method': 13,
-        'private_property_method': 13,
+        'save': 13,
+        'delete': 14,
 
-        'static_method': 14,
-        'private_static_method': 14,
-
-        'class_method': 15,
-        'private_class_method': 15,
-
-        'method': 16,
-        'private_method': 17,
+        'property_method': 20,
+        'private_property_method': 20,
+        'static_method': 22,
+        'private_static_method': 22,
+        'class_method': 24,
+        'private_class_method': 24,
+        'method': 26,
+        'magic_method': 27,
+        'private_method': 27,
     }
 
-    STRICT_NODE_TYPE_WEIGHTS = {
+    STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
         'docstring': 0,
         'pass': 1,
         'meta_class': 2,
@@ -52,17 +58,20 @@ class ClassAttributesOrderChecker:
         '__new__': 9,
         '__init__': 10,
         '__post_init__': 11,
-        'magic_method': 12,
+        '__str__': 12,
 
-        'property_method': 13,
-        'static_method': 14,
-        'class_method': 15,
-        'method': 16,
+        'save': 13,
+        'delete': 14,
 
-        'private_property_method': 17,
-        'private_static_method': 18,
-        'private_class_method': 19,
-        'private_method': 20,
+        'property_method': 20,
+        'private_property_method': 21,
+        'static_method': 22,
+        'private_static_method': 23,
+        'class_method': 24,
+        'private_class_method': 25,
+        'method': 26,
+        'magic_method': 27,
+        'private_method': 28,
     }
 
     name = 'flake8-class-attributes-order'
@@ -76,10 +85,13 @@ class ClassAttributesOrderChecker:
 
     @staticmethod
     def _get_funcdef_type(child_node) -> str:
-        special_magic_methods = {
+        special_methods_names = {
             '__new__',
             '__init__',
             '__post_init__',
+            '__str__',
+            'save',
+            'delete',
         }
         decorator_names_to_types_map = {
             'property': 'property_method',
@@ -102,7 +114,7 @@ class ClassAttributesOrderChecker:
                     return decorator_names_to_types_map[f'private_{decorator_info.id}']
 
                 return decorator_names_to_types_map[decorator_info.id]
-        if child_node.name in special_magic_methods:
+        if child_node.name in special_methods_names:
             return child_node.name
         if child_node.name.startswith('__') and child_node.name.endswith('__'):
             return 'magic_method'
@@ -113,6 +125,20 @@ class ClassAttributesOrderChecker:
     @staticmethod
     def _is_caps_lock_str(var_name: str) -> bool:
         return var_name.upper() == var_name
+
+    @staticmethod
+    def __get_name_for_field_node_type(node: Union[ast.Assign, ast.AnnAssign]) -> str:
+        default_name = '<class_level_assignment>'
+        if isinstance(node, ast.AnnAssign):
+            return node.target.id if isinstance(node.target, ast.Name) else default_name
+        elif isinstance(node.targets[0], ast.Name):
+            return node.targets[0].id
+        elif hasattr(node.targets[0], 'attr'):
+            return node.targets[0].attr  # type: ignore
+        elif isinstance(node.targets[0], ast.Tuple):
+            return ', '.join([e.id for e in node.targets[0].elts if isinstance(e, ast.Name)])
+        else:
+            return default_name
 
     @classmethod
     def _get_node_name(cls, node, node_type: str):
@@ -130,20 +156,6 @@ class ClassAttributesOrderChecker:
             if node_type.endswith(type_postfix):
                 return name_getter(node)
 
-    @staticmethod
-    def __get_name_for_field_node_type(node: Union[ast.Assign, ast.AnnAssign]) -> str:
-        default_name = '<class_level_assignment>'
-        if isinstance(node, ast.AnnAssign):
-            return node.target.id if isinstance(node.target, ast.Name) else default_name
-        elif isinstance(node.targets[0], ast.Name):
-            return node.targets[0].id
-        elif hasattr(node.targets[0], 'attr'):
-            return node.targets[0].attr  # type: ignore
-        elif isinstance(node.targets[0], ast.Tuple):
-            return ', '.join([e.id for e in node.targets[0].elts if isinstance(e, ast.Name)])
-        else:
-            return default_name
-
     @classmethod
     def add_options(cls, parser) -> None:
         parser.add_option(
@@ -157,7 +169,7 @@ class ClassAttributesOrderChecker:
         cls.use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
 
     @classmethod
-    def _get_model_parts_info(cls, model_ast, weights: Dict[str, int]):
+    def _get_model_parts_info(cls, model_ast, weights: Mapping[str, int]):
         parts_info = []
         for child_node in model_ast.body:
             node_type = cls._get_model_node_type(child_node)
@@ -232,7 +244,7 @@ class ClassAttributesOrderChecker:
                 errors.append((
                     model_part['node'].lineno,
                     model_part['node'].col_offset,
-                    'CCE002 Class level expression detected in model {0}, line {1}'.format(
+                    'CCE002 Class level expression detected in class {0}, line {1}'.format(
                         model_part['model_name'],
                         model_part['node'].lineno,
                     ),
