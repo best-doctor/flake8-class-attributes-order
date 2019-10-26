@@ -13,8 +13,37 @@ If django model fields are detected, the validator can detect,
 if the field is link to another table (foreign key, generic key, etc) or not.
 
 After resolving each attribute type, validator checks attributes order.
-For example, here are default methods order: `__init__`, `__str__`, `save`, `delete`, `@property`,
-`@staticmethod`, `@classmethod`, other methods, underscored methods.
+
+Here are methods order for non strict validation:
++ __new__
++ __init__
++ __post_init__
++ other magic methods
++ `@property`
++ `@staticmethod`
++ `@classmethod`
++ other methods
++ private methods
+
+And here are methods order if you have strict validation enabled:
++ __new__
++ __init__
++ __post_init__
++ other magic method
++ `@property`
++ `@staticmethod`
++ `@classmethod`
++ other methods
++ private `@property`
++ private `@staticmethod`
++ private `@classmethod`
++ other private methods
+
+To enable strict validation, please set the flag in your config file:
+```
+use_class_attributes_order_strict_mode = True
+```
+
 If the order is broken, validator will report on it.
 
 Besides methods, the validator checks other attributes methods: docstrings, nested classes,
