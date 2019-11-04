@@ -185,21 +185,12 @@ class ClassAttributesOrderChecker:
             (ast.Pass, lambda n: 'pass'),
             ((ast.Assign, ast.AnnAssign), lambda n: cls._get_assighment_type(n)),
             ((ast.FunctionDef, ast.AsyncFunctionDef), lambda n: cls._get_funcdef_type(n)),
+            (ast.Expr, lambda n: 'docstring' if isinstance(n.value, ast.Str) else 'expression'),
+            (ast.ClassDef, lambda n: 'meta_class' if child_node.name == 'Meta' else 'nested_class'),
         ]
         for type_or_type_tuple, type_getter in direct_node_types_mapping:
             if isinstance(child_node, type_or_type_tuple):  # type: ignore
                 return type_getter(child_node)
-
-        if isinstance(child_node, ast.Expr):
-            if isinstance(child_node.value, ast.Str):
-                return 'docstring'
-            else:
-                return 'expression'
-        elif isinstance(child_node, ast.ClassDef):
-            if child_node.name == 'Meta':
-                return 'meta_class'
-            else:
-                return 'nested_class'
 
     @classmethod
     def _get_assighment_type(cls, child_node) -> str:
