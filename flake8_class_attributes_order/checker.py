@@ -1,12 +1,9 @@
-from __future__ import annotations
 import ast
-from typing import Generator, Tuple, List, Union, Mapping, TYPE_CHECKING
+from typing import Generator, Tuple, List, Union, Mapping
 
+from typing_extensions import Final
 
 from flake8_class_attributes_order import __version__ as version
-
-if TYPE_CHECKING:
-    from typing_extensions import Final
 
 
 class ClassAttributesOrderChecker:
