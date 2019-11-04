@@ -5,64 +5,72 @@
 [![Test Coverage](https://api.codeclimate.com/v1/badges/28b7cd9d0714ec4b93a3/test_coverage)](https://codeclimate.com/github/best-doctor/flake8-class-attributes-order/test_coverage)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flake8-class-attributes-order)
 
-An extension for flake8 to report on wrong class attributes order and class level logic.
+An extension for flake8 to report on wrong class attributes order and
+class level logic.
 
-The validator can extract class attribute type: docstring, property, nested class,
-`GLOBAL_VAR`, etc.
+The validator can extract class attribute type: docstring, property,
+nested class, `GLOBAL_VAR`, etc.
 If django model fields are detected, the validator can detect,
-if the field is link to another table (foreign key, generic key, etc) or not.
+if the field is link to another table (foreign key, generic key, etc)
+or not.
 
 After resolving each attribute type, validator checks attributes order.
 
 Here are methods order for non strict validation:
-+ __new__
-+ __init__
-+ __post_init__
-+ other magic methods
-+ `@property`
-+ `@staticmethod`
-+ `@classmethod`
-+ other methods
-+ private methods
+
+- `__new__`
+- `__init__`
+- `__post_init__`
+- other magic methods
+- `@property`
+- `@staticmethod`
+- `@classmethod`
+- other methods
+- private methods
 
 And here are methods order if you have strict validation enabled:
-+ __new__
-+ __init__
-+ __post_init__
-+ other magic method
-+ `@property`
-+ `@staticmethod`
-+ `@classmethod`
-+ other methods
-+ private `@property`
-+ private `@staticmethod`
-+ private `@classmethod`
-+ other private methods
+
+- `__new__`
+- `__init__`
+- `__post_init__`
+- other magic method
+- `@property`
+- `@staticmethod`
+- `@classmethod`
+- other methods
+- private `@property`
+- private `@staticmethod`
+- private `@classmethod`
+- other private methods
 
 To enable strict validation, please set the flag in your config file:
+
 ```
 use_class_attributes_order_strict_mode = True
 ```
 
 If the order is broken, validator will report on it.
 
-Besides methods, the validator checks other attributes methods: docstrings, nested classes,
-constants, attributes, and so on.
+Besides methods, the validator checks other attributes methods:
+docstrings, nested classes, constants, attributes, and so on.
 
-Also validator checks, if class has no class level logic and report if any. Here is an example:
+Also validator checks, if class has no class level logic and report
+if any. Here is an example:
 
 ```python
 class PhoneForm(forms.Form):
     phone = forms.CharField(17, label='Телефон'.upper())
-    phone.widget.attrs.update({'class': 'form-control phone'})  # this should happens in __init__!
+
+    # this should happens in __init__!
+    phone.widget.attrs.update({'class': 'form-control phone'})
 
 ```
 
-
 ## Installation
 
-    pip install flake8-class-attributes-order
-
+```
+pip install flake8-class-attributes-order
+```
 
 ## Example
 
@@ -86,6 +94,7 @@ class UserNode:
             pass
 
 ```
+
 Usage:
 
 ```terminal
@@ -96,7 +105,6 @@ test.py:15:5: CCE002 Class level expression detected model UserNode, line 15
 
 Tested on Python 3.7.x and flake8 3.7.5.
 
-
 ## Error codes
 
 | Error code |                     Description                          |
@@ -104,18 +112,22 @@ Tested on Python 3.7.x and flake8 3.7.5.
 |   CCE001   | Wrong class attributes order (`XXX should be after YYY`) |
 |   CCE002   | Class level expression detected                          |
 
-
 ## Contributing
 
 We would love you to contribute to our project. It's simple:
 
-1. Create an issue with bug you found or proposal you have. Wait for approve from maintainer.
-2. Create a pull request. Make sure all checks are green.
-3. Fix review comments if any.
-4. Be awesome.
+- Create an issue with bug you found or proposal you have.
+  Wait for approve from maintainer.
+- Create a pull request. Make sure all checks are green.
+- Fix review comments if any.
+- Be awesome.
 
 Here are useful tips:
 
-- You can run all checks and tests with `make check`. Please do it before TravisCI does.
-- We use [BestDoctor python styleguide](https://github.com/best-doctor/guides/blob/master/guides/python_styleguide.md). Sorry, styleguide is available only in Russian for now.
-- We respect [Django CoC](https://www.djangoproject.com/conduct/). Make soft, not bullshit.
+- You can run all checks and tests with `make check`. Please do it
+  before TravisCI does.
+- We use
+  [BestDoctor python styleguide](https://github.com/best-doctor/guides/blob/master/guides/python_styleguide.md).
+  Sorry, styleguide is available only in Russian for now.
+- We respect [Django CoC](https://www.djangoproject.com/conduct/).
+  Make soft, not bullshit.
