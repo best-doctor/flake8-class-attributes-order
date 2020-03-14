@@ -1,5 +1,5 @@
 import ast
-from typing import Generator, Tuple, List, Union, Mapping
+from typing import Generator, Tuple, List, Union, Mapping, Dict
 
 from typing_extensions import Final
 
@@ -71,7 +71,7 @@ class ClassAttributesOrderChecker:
         'private_method': 28,
     }
 
-    FIXED_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
+    FIXED_NODE_TYPE_WEIGHTS: Final[Dict[str, int]] = {
         'docstring': 0,
         'pass': 1,
         'expression': 2,
@@ -297,8 +297,6 @@ class ClassAttributesOrderChecker:
                     if node_type_or_supertype in node_to_configured_weight:
                         node_type_weights[node_type] = node_to_configured_weight[node_type_or_supertype]
                         break
-                else:
-                    node_type_weights[node_type] = None
 
             return node_type_weights
         elif ClassAttributesOrderChecker.use_strict_mode:
