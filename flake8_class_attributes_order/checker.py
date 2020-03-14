@@ -71,10 +71,46 @@ class ClassAttributesOrderChecker:
         'private_method': 28,
     }
 
+    FIXED_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
+        'docstring': 0,
+        'pass': 1,
+        'expression': 2,
+        'if': 3,
+    }
+
+    CONFIGURABLE_NODE_TYPES: Final[Mapping[str, List[str]]] = {
+        'nested_class': ['nested_class'],
+        'meta_class': ['meta_class', 'nested_class'],
+
+        'field': ['field'],
+        'constant': ['constant', 'field'],
+        'outer_field': ['outer_field', 'field'],
+
+        'method': ['method'],
+        'magic_method': ['magic_method', 'method'],
+        '__new__': ['__new__', 'magic_method', 'method'],
+        '__init__': ['__init__', 'magic_method', 'method'],
+        '__post_init__': ['__post_init__', 'magic_method', 'method'],
+        '__str__': ['__str__', 'magic_method', 'method'],
+
+        'private_method': ['private_method', 'method'],
+
+        'save': ['save', 'method'],
+        'delete': ['delete', 'method'],
+
+        'property_method': ['property_method', 'method'],
+        'private_property_method': ['private_property_method', 'property_method', 'method'],
+        'static_method': ['static_method', 'method'],
+        'private_static_method': ['private_static_method', 'static_method', 'method'],
+        'class_method': ['class_method', 'method'],
+        'private_class_method': ['private_class_method', 'class_method', 'method'],
+    }
+
     name = 'flake8-class-attributes-order'
     version = version
 
     use_strict_mode = False
+    class_attributes_order = None
 
     def __init__(self, tree, filename: str):
         self.filename = filename
@@ -160,22 +196,29 @@ class ClassAttributesOrderChecker:
             action='store_true',
             parse_from_config=True,
         )
+        parser.add_option(
+            '--class-attributes-order',
+            comma_separated_list=True,
+            parse_from_config=True,
+        )
 
     @classmethod
     def parse_options(cls, options) -> None:
         cls.use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
+        cls.class_attributes_order = options.class_attributes_order
 
     @classmethod
     def _get_model_parts_info(cls, model_ast, weights: Mapping[str, int]):
         parts_info = []
         for child_node in model_ast.body:
             node_type = cls._get_model_node_type(child_node)
-            parts_info.append({
-                'model_name': model_ast.name,
-                'node': child_node,
-                'type': node_type,
-                'weight': weights[node_type],
-            })
+            if node_type in weights:
+                parts_info.append({
+                    'model_name': model_ast.name,
+                    'node': child_node,
+                    'type': node_type,
+                    'weight': weights[node_type],
+                })
         return parts_info
 
     @classmethod
@@ -239,12 +282,32 @@ class ClassAttributesOrderChecker:
                 ))
         return errors
 
+    @classmethod
+    def _get_node_weights(cls) -> Mapping[str, int]:
+        if ClassAttributesOrderChecker.class_attributes_order:
+            node_type_weights = cls.FIXED_NODE_TYPE_WEIGHTS.copy()
+            node_to_configured_weight = {
+                k: v for v, k in enumerate(
+                    ClassAttributesOrderChecker.class_attributes_order,
+                    start=len(node_type_weights))
+            }
+
+            for node_type, node_type_path in cls.CONFIGURABLE_NODE_TYPES.items():
+                for node_type_or_supertype in node_type_path:
+                    if node_type_or_supertype in node_to_configured_weight:
+                        node_type_weights[node_type] = node_to_configured_weight[node_type_or_supertype]
+                        break
+                else:
+                    node_type_weights[node_type] = None
+
+            return node_type_weights
+        elif ClassAttributesOrderChecker.use_strict_mode:
+            return cls.STRICT_NODE_TYPE_WEIGHTS
+        else:
+            return cls.NON_STRICT_NODE_TYPE_WEIGHTS
+
     def run(self) -> Generator[Tuple[int, int, str, type], None, None]:
-        weight_info = (
-            self.STRICT_NODE_TYPE_WEIGHTS
-            if ClassAttributesOrderChecker.use_strict_mode
-            else self.NON_STRICT_NODE_TYPE_WEIGHTS
-        )
+        weight_info = self._get_node_weights()
         classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
         errors: List[Tuple[int, int, str]] = []
         for class_def in classes:
