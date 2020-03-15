@@ -1,4 +1,5 @@
 import ast
+import warnings
 from typing import Generator, Tuple, List, Union, Mapping, Dict
 
 from typing_extensions import Final
@@ -195,17 +196,28 @@ class ClassAttributesOrderChecker:
             '--use-class-attributes-order-strict-mode',
             action='store_true',
             parse_from_config=True,
+            help='Require more strict order of private class members',
         )
         parser.add_option(
             '--class-attributes-order',
             comma_separated_list=True,
             parse_from_config=True,
+            help='Comma-separated list of class attributes to '
+                 'configure order manually',
         )
 
     @classmethod
     def parse_options(cls, options) -> None:
         cls.use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
         cls.class_attributes_order = options.class_attributes_order
+
+        if cls.use_strict_mode and cls.class_attributes_order:
+            warnings.warn(
+                'Both options that are exclusive provided: --use-class-attributes-order-strict-mode '
+                'and --class-attributes-order. Order defined in --class-attributes-order will be used '
+                'to check against.',
+                Warning,
+            )
 
     @classmethod
     def _get_model_parts_info(cls, model_ast, weights: Mapping[str, int]):
@@ -287,7 +299,7 @@ class ClassAttributesOrderChecker:
         if ClassAttributesOrderChecker.class_attributes_order:
             node_type_weights = cls.FIXED_NODE_TYPE_WEIGHTS.copy()
             node_to_configured_weight = {
-                k: v for v, k in enumerate(
+                node_type: weight for weight, node_type in enumerate(
                     ClassAttributesOrderChecker.class_attributes_order,
                     start=len(node_type_weights))
             }
