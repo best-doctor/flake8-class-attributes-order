@@ -2,6 +2,7 @@ language: python
 python:
   - "3.6"
   - "3.7"
+  - "3.8"
 install:
   - gem install mdl
   - pip install -r requirements_dev.txt
