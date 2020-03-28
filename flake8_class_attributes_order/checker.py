@@ -176,12 +176,21 @@ class ClassAttributesOrderChecker:
 
     @classmethod
     def _get_node_name(cls, node, node_type: str):
+
+        special_methods_names = (
+            '__new__',
+            '__init__',
+            '__post_init__',
+            '__str__',
+            'save',
+            'delete',
+        )
         name_getters_by_type = [
             ('docstring', lambda n: 'docstring'),
             ('meta_class', lambda n: 'Meta'),
             ('constant', lambda n: n.target.id if isinstance(n, ast.AnnAssign) else n.targets[0].id),  # type: ignore
             ('field', cls.__get_name_for_field_node_type),
-            ('method', lambda n: n.name),
+            (('method',) + special_methods_names , lambda n: n.name),
             ('nested_class', lambda n: n.name),
             ('expression', lambda n: '<class_level_expression>'),
             ('if', lambda n: 'if ...'),
