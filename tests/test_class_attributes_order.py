@@ -95,3 +95,15 @@ def test_warning_if_both_strict_mode_and_configurable_order_defined():
         run_validator_for_test_file(
             'ok.py', strict_mode=True, attributes_order=['nested_class', 'field', 'method'])
         assert len(w) == 1
+
+def test_save_delete():
+    errors = run_validator_for_test_file(
+        'special_method.py',
+    )
+    assert len(errors) == 6
+    assert errors[0][2] == 'CCE001 A.foo should be after A.__new__'
+    assert errors[1][2] == 'CCE001 B.foo should be after B.__init__'
+    assert errors[2][2] == 'CCE001 C.foo should be after C.__post_init__'
+    assert errors[3][2] == 'CCE001 D.foo should be after D.__str__'
+    assert errors[4][2] == 'CCE001 E.foo should be after E.save'
+    assert errors[5][2] == 'CCE001 F.foo should be after F.delete'
