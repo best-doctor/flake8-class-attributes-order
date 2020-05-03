@@ -18,3 +18,4 @@ flake8-todo==0.7
 mypy==0.770
 pydocstyle==3.0.0
 typing-extensions==3.7.4
+safety==1.9.0
