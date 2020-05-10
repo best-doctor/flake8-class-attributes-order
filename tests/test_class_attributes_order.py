@@ -1,7 +1,6 @@
 import warnings
 
 from conftest import run_validator_for_test_file
-from flake8.options.manager import OptionManager
 
 
 def test_file_with_improper_default_order():
@@ -65,7 +64,7 @@ def test_configurable_order_wrong_order():
 def test_child_attributes_fallback_to_parent_if_not_configured():
     assert not run_validator_for_test_file(
         'configurable.py',
-        attributes_order=['field', 'nested_class','method'],
+        attributes_order=['field', 'nested_class', 'method'],
     )
     errors = run_validator_for_test_file(
         'configurable.py',
@@ -95,6 +94,7 @@ def test_warning_if_both_strict_mode_and_configurable_order_defined():
         run_validator_for_test_file(
             'ok.py', strict_mode=True, attributes_order=['nested_class', 'field', 'method'])
         assert len(w) == 1
+
 
 def test_save_delete():
     errors = run_validator_for_test_file(
