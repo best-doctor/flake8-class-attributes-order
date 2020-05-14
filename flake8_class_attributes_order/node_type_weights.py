@@ -132,9 +132,9 @@ def get_node_weights(options=None) -> Mapping[str, int]:
                     break
 
         return node_type_weights
-    
+
     if use_strict_mode:
-        
+
         return ClassNodeTypeWeights.STRICT_NODE_TYPE_WEIGHTS
-    
+
     return ClassNodeTypeWeights.NON_STRICT_NODE_TYPE_WEIGHTS

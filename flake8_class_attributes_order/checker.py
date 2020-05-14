@@ -41,7 +41,7 @@ class ClassAttributesOrderChecker:
         weight_info = get_node_weights(self.options)
         classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
         errors: List[Tuple[int, int, str]] = []
-        
+
         for class_def in classes:
             model_parts_info = get_model_parts_info(class_def, weight_info)
             errors += get_ordering_errors(model_parts_info)
