@@ -10,6 +10,7 @@ class ClassAttributesOrderChecker:
 
     name = 'flake8-class-attributes-order'
     version = version
+    options = None
 
     def __init__(self, tree, filename: str):
         self.filename = filename
@@ -188,8 +189,12 @@ class ClassAttributesOrderChecker:
                 ))
         return errors
 
-    def run(self, options) -> Generator[Tuple[int, int, str, type], None, None]:
-        weight_info = ClassNodeTypeWeights.get_node_weights(options)
+    @classmethod
+    def parse_options(cls, options: str) -> None:
+        cls.options = options
+
+    def run(self) -> Generator[Tuple[int, int, str, type], None, None]:
+        weight_info = ClassNodeTypeWeights.get_node_weights(self.options)
         classes = [n for n in ast.walk(self.tree) if isinstance(n, ast.ClassDef)]
         errors: List[Tuple[int, int, str]] = []
         for class_def in classes:

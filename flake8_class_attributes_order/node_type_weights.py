@@ -104,26 +104,24 @@ class ClassNodeTypeWeights:
         'private_class_method': ['private_class_method', 'class_method', 'method'],
     }
 
-    use_strict_mode = False
-    class_attributes_order = None
-
     @classmethod
-    def get_node_weights(cls, options) -> Mapping[str, int]:
-        cls.use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
-        cls.class_attributes_order = options.class_attributes_order
+    def get_node_weights(cls, options=None) -> Mapping[str, int]:
+        use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
+        class_attributes_order = options.class_attributes_order
 
-        if cls.use_strict_mode and cls.class_attributes_order:
+        if use_strict_mode and class_attributes_order:
             warnings.warn(
                 'Both options that are exclusive provided: --use-class-attributes-order-strict-mode '
                 'and --class-attributes-order. Order defined in --class-attributes-order will be used '
                 'to check against.',
                 Warning,
             )
-        if ClassNodeTypeWeights.class_attributes_order:
+
+        if class_attributes_order:
             node_type_weights = cls.FIXED_NODE_TYPE_WEIGHTS.copy()
             node_to_configured_weight = {
                 node_type: weight for weight, node_type in enumerate(
-                    ClassNodeTypeWeights.class_attributes_order,
+                    class_attributes_order,
                     start=len(node_type_weights))
             }
 
@@ -134,7 +132,7 @@ class ClassNodeTypeWeights:
                         break
 
             return node_type_weights
-        elif ClassNodeTypeWeights.use_strict_mode:
+        elif use_strict_mode:
             return cls.STRICT_NODE_TYPE_WEIGHTS
         else:
             return cls.NON_STRICT_NODE_TYPE_WEIGHTS
