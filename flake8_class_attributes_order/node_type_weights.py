@@ -104,35 +104,37 @@ class ClassNodeTypeWeights:
         'private_class_method': ['private_class_method', 'class_method', 'method'],
     }
 
-    @classmethod
-    def get_node_weights(cls, options=None) -> Mapping[str, int]:
-        use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
-        class_attributes_order = options.class_attributes_order
 
-        if use_strict_mode and class_attributes_order:
-            warnings.warn(
-                'Both options that are exclusive provided: --use-class-attributes-order-strict-mode '
-                'and --class-attributes-order. Order defined in --class-attributes-order will be used '
-                'to check against.',
-                Warning,
-            )
+def get_node_weights(options=None) -> Mapping[str, int]:
+    use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
+    class_attributes_order = options.class_attributes_order
 
-        if class_attributes_order:
-            node_type_weights = cls.FIXED_NODE_TYPE_WEIGHTS.copy()
-            node_to_configured_weight = {
-                node_type: weight for weight, node_type in enumerate(
-                    class_attributes_order,
-                    start=len(node_type_weights))
-            }
+    if use_strict_mode and class_attributes_order:
+        warnings.warn(
+            'Both options that are exclusive provided: --use-class-attributes-order-strict-mode '
+            'and --class-attributes-order. Order defined in --class-attributes-order will be used '
+            'to check against.',
+            Warning,
+        )
 
-            for node_type, node_type_path in cls.CONFIGURABLE_NODE_TYPES.items():
-                for node_type_or_supertype in node_type_path:
-                    if node_type_or_supertype in node_to_configured_weight:
-                        node_type_weights[node_type] = node_to_configured_weight[node_type_or_supertype]
-                        break
+    if class_attributes_order:
+        node_type_weights = ClassNodeTypeWeights.FIXED_NODE_TYPE_WEIGHTS.copy()
+        node_to_configured_weight = {
+            node_type: weight for weight, node_type in enumerate(
+                class_attributes_order,
+                start=len(node_type_weights))
+        }
 
-            return node_type_weights
-        elif use_strict_mode:
-            return cls.STRICT_NODE_TYPE_WEIGHTS
-        else:
-            return cls.NON_STRICT_NODE_TYPE_WEIGHTS
+        for node_type, node_type_path in ClassNodeTypeWeights.CONFIGURABLE_NODE_TYPES.items():
+            for node_type_or_supertype in node_type_path:
+                if node_type_or_supertype in node_to_configured_weight:
+                    node_type_weights[node_type] = node_to_configured_weight[node_type_or_supertype]
+                    break
+
+        return node_type_weights
+    
+    if use_strict_mode:
+        
+        return ClassNodeTypeWeights.STRICT_NODE_TYPE_WEIGHTS
+    
+    return ClassNodeTypeWeights.NON_STRICT_NODE_TYPE_WEIGHTS
