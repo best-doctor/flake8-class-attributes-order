@@ -20,10 +20,9 @@ def run_validator_for_test_file(filename, max_annotations_complexity=None,
     options = OptionManager()
     options.use_class_attributes_order_strict_mode = strict_mode
     options.class_attributes_order = attributes_order
-    ClassAttributesOrderChecker.parse_options(options)
 
     checker = ClassAttributesOrderChecker(tree=tree, filename=filename)
     if max_annotations_complexity:
         checker.max_annotations_complexity = max_annotations_complexity
 
-    return list(checker.run())
+    return list(checker.run(options))
