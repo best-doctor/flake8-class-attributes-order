@@ -4,7 +4,7 @@ from typing import List, Mapping, Dict
 from typing_extensions import Final
 
 
-non_strict_node_type_weights: Final[Mapping[str, int]] = {
+NON_STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
@@ -36,7 +36,7 @@ non_strict_node_type_weights: Final[Mapping[str, int]] = {
     'private_method': 27,
 }
 
-strict_node_type_weights: Final[Mapping[str, int]] = {
+STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
@@ -68,14 +68,14 @@ strict_node_type_weights: Final[Mapping[str, int]] = {
     'private_method': 28,
 }
 
-fixed_node_type_weights: Final[Dict[str, int]] = {
+FIXED_NODE_TYPE_WEIGHTS: Final[Dict[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'expression': 2,
     'if': 3,
 }
 
-configurable_node_types: Final[Mapping[str, List[str]]] = {
+CONFIGURABLE_NODE_TYPES: Final[Mapping[str, List[str]]] = {
     'nested_class': ['nested_class'],
     'meta_class': ['meta_class', 'nested_class'],
 
@@ -117,14 +117,14 @@ def get_node_weights(options=None) -> Mapping[str, int]:
         )
 
     if class_attributes_order:
-        node_type_weights = fixed_node_type_weights.copy()
+        node_type_weights = FIXED_NODE_TYPE_WEIGHTS.copy()
         node_to_configured_weight = {
             node_type: weight for weight, node_type in enumerate(
                 class_attributes_order,
                 start=len(node_type_weights))
         }
 
-        for node_type, node_type_path in configurable_node_types.items():
+        for node_type, node_type_path in CONFIGURABLE_NODE_TYPES.items():
             for node_type_or_supertype in node_type_path:
                 if node_type_or_supertype in node_to_configured_weight:
                     node_type_weights[node_type] = node_to_configured_weight[node_type_or_supertype]
@@ -134,6 +134,6 @@ def get_node_weights(options=None) -> Mapping[str, int]:
 
     if use_strict_mode:
 
-        return strict_node_type_weights
+        return STRICT_NODE_TYPE_WEIGHTS
 
-    return non_strict_node_type_weights
+    return NON_STRICT_NODE_TYPE_WEIGHTS
