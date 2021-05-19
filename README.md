@@ -1,6 +1,6 @@
 # flake8-class-attributes-order
 
-[![Build Status](https://travis-ci.org/best-doctor/flake8-class-attributes-order.svg?branch=master)](https://travis-ci.org/best-doctor/flake8-class-attributes-order)
+[![Build Status](https://github.com/best-doctor/flake8-class-attributes-order/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/best-doctor/flake8-class-attributes-order/actions/workflows/build.yml)
 [![Maintainability](https://api.codeclimate.com/v1/badges/28b7cd9d0714ec4b93a3/maintainability)](https://codeclimate.com/github/best-doctor/flake8-class-attributes-order/maintainability)
 [![Test Coverage](https://api.codeclimate.com/v1/badges/28b7cd9d0714ec4b93a3/test_coverage)](https://codeclimate.com/github/best-doctor/flake8-class-attributes-order/test_coverage)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/flake8-class-attributes-order)
