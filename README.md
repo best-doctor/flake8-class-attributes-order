@@ -47,7 +47,7 @@ class PhoneForm(forms.Form):
 
 ## Installation
 
-```
+```terminal
 pip install flake8-class-attributes-order
 ```
 
@@ -72,7 +72,7 @@ There is another preconfigured order that is more strict on private subtypes:
 
 To enable strict validation, please set the flag in your config file:
 
-```
+```ini
 [flake8]
 use_class_attributes_order_strict_mode = True
 ```
@@ -83,7 +83,7 @@ Order can be manually configured via `class_attributes_order` config setting.
 
 For example, if you prefer to put `class Meta` after constants and fields:
 
-```
+```ini
 [flake8]
 class_attributes_order =
     field,
