@@ -32,10 +32,11 @@ def get_model_node_type(child_node) -> str:
 
 def get_assighment_type(child_node) -> str:
     assignee_node = child_node.target if isinstance(child_node, ast.AnnAssign) else child_node.targets[0]
+    assighment_type = 'field'
     if isinstance(assignee_node, ast.Subscript):
-        return 'expression'
+        assighment_type = 'expression'
     if isinstance(assignee_node, ast.Name) and is_caps_lock_str(assignee_node.id):
-        return 'constant'
+        assighment_type = 'constant'
     if isinstance(child_node.value, ast.Call):
         dump_callable = ast.dump(child_node.value.func)
         if (
@@ -44,8 +45,8 @@ def get_assighment_type(child_node) -> str:
             or 'OneToOneField' in dump_callable
             or 'GenericRelation' in dump_callable
         ):
-            return 'outer_field'
-    return 'field'
+            assighment_type = 'outer_field'
+    return assighment_type
 
 
 def get_funcdef_type(child_node) -> str:
@@ -78,13 +79,14 @@ def get_funcdef_type(child_node) -> str:
                 return decorator_names_to_types_map[f'private_{decorator_info.id}']
 
             return decorator_names_to_types_map[decorator_info.id]
+    funcdef_type = 'method'
     if child_node.name in special_methods_names:
-        return child_node.name
-    if child_node.name.startswith('__') and child_node.name.endswith('__'):
-        return 'magic_method'
-    if child_node.name.startswith('_'):
-        return 'private_method'
-    return 'method'
+        funcdef_type = child_node.name
+    elif child_node.name.startswith('__') and child_node.name.endswith('__'):
+        funcdef_type = 'magic_method'
+    elif child_node.name.startswith('_'):
+        funcdef_type = 'private_method'
+    return funcdef_type
 
 
 def is_caps_lock_str(var_name: str) -> bool:
