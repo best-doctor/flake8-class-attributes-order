@@ -56,14 +56,14 @@ def get_node_name(node, node_type: str):
 
 
 def get_name_for_field_node_type(node: Union[ast.Assign, ast.AnnAssign]) -> str:
-    default_name = '<class_level_assignment>'
+    name = '<class_level_assignment>'
     if isinstance(node, ast.AnnAssign):
-        return node.target.id if isinstance(node.target, ast.Name) else default_name
+        name = node.target.id if isinstance(node.target, ast.Name) else name
     elif isinstance(node.targets[0], ast.Name):
-        return node.targets[0].id
+        name = node.targets[0].id
     elif hasattr(node.targets[0], 'attr'):
-        return node.targets[0].attr  # type: ignore
+        name = node.targets[0].attr  # type: ignore
     elif isinstance(node.targets[0], ast.Tuple):
-        return ', '.join([e.id for e in node.targets[0].elts if isinstance(e, ast.Name)])
-    else:
-        return default_name
+        name = ', '.join([e.id for e in node.targets[0].elts if isinstance(e, ast.Name)])
+
+    return name
