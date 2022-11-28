@@ -26,13 +26,17 @@ NON_STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
     'delete': 14,
 
     'property_method': 20,
+    'protected_property_method': 20,
     'private_property_method': 20,
     'static_method': 22,
+    'protected_static_method': 22,
     'private_static_method': 22,
     'class_method': 24,
+    'protected_class_method': 24,
     'private_class_method': 24,
     'method': 26,
     'magic_method': 27,
+    'protected_method': 27,
     'private_method': 27,
 }
 
@@ -58,14 +62,18 @@ STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
     'delete': 14,
 
     'property_method': 20,
-    'private_property_method': 21,
-    'static_method': 22,
-    'private_static_method': 23,
-    'class_method': 24,
-    'private_class_method': 25,
-    'method': 26,
-    'magic_method': 27,
-    'private_method': 28,
+    'protected_property_method': 21,
+    'private_property_method': 22,
+    'static_method': 23,
+    'protected_static_method': 24,
+    'private_static_method': 25,
+    'class_method': 26,
+    'protected_class_method': 27,
+    'private_class_method': 28,
+    'method': 29,
+    'protected_method': 30,
+    'magic_method': 31,
+    'private_method': 32,
 }
 
 FIXED_NODE_TYPE_WEIGHTS: Final[Dict[str, int]] = {
@@ -90,16 +98,20 @@ CONFIGURABLE_NODE_TYPES: Final[Mapping[str, List[str]]] = {
     '__post_init__': ['__post_init__', 'magic_method', 'method'],
     '__str__': ['__str__', 'magic_method', 'method'],
 
+    'protected_method': ['protected_method', 'method'],
     'private_method': ['private_method', 'method'],
 
     'save': ['save', 'method'],
     'delete': ['delete', 'method'],
 
     'property_method': ['property_method', 'method'],
+    'protected_property_method': ['protected_property_method', 'property_method', 'method'],
     'private_property_method': ['private_property_method', 'property_method', 'method'],
     'static_method': ['static_method', 'method'],
+    'protected_static_method': ['protected_static_method', 'static_method', 'method'],
     'private_static_method': ['private_static_method', 'static_method', 'method'],
     'class_method': ['class_method', 'method'],
+    'protected_class_method': ['protected_class_method', 'class_method', 'method'],
     'private_class_method': ['private_class_method', 'class_method', 'method'],
 }
 

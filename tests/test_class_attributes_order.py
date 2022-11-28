@@ -18,13 +18,93 @@ def test_ok_cases_produces_no_errors():
 
 def test_strict_mode_improper_order():
     errors = run_validator_for_test_file(
-        'strict_errored.py', strict_mode=True)
+        'strict_errored.py', strict_mode=True
+    )
     assert len(errors) == 2
 
 
 def test_strict_mode_no_errors():
     assert not run_validator_for_test_file(
-        'strict_ok.py', strict_mode=True)
+        'strict_ok.py', strict_mode=True
+    )
+
+
+def test_private_errored():
+    errors = run_validator_for_test_file(
+        'private_errored.py',
+    )
+    assert len(errors) == 1
+    assert errors[0][2] == 'CCE001 A.get_tabs_info should be after A.__get_favicon_path'
+
+
+def test_private_ok():
+    assert not run_validator_for_test_file('private_ok.py')
+
+
+def test_strict_mode_with_private_errored():
+    errors = run_validator_for_test_file(
+        'private_strict_errored.py', strict_mode=True
+    )
+    assert len(errors) == 3
+
+
+def test_strict_mode_with_private_no_errors():
+    assert not run_validator_for_test_file(
+        'private_strict_ok.py', strict_mode=True
+    )
+
+
+def test_configurable_order_with_private_order_no_errors():
+    assert not run_validator_for_test_file(
+        'private_custom_order_ok.py',
+        attributes_order=[
+            'constant',
+            'field',
+            'meta_class',
+            '__new__',
+            '__init__',
+            'magic_method',
+            'property_method',
+            'static_method',
+            'class_method',
+            'method',
+            'protected_property_method',
+            'protected_static_method',
+            'protected_class_method',
+            'protected_method',
+            'private_property_method',
+            'private_static_method',
+            'private_class_method',
+            'private_method'
+        ],
+    )
+
+
+def test_configurable_order_with_private_order_errored():
+    errors = run_validator_for_test_file(
+        'private_custom_order_errored.py',
+        attributes_order=[
+            'constant',
+            'field',
+            'meta_class',
+            '__new__',
+            '__init__',
+            'magic_method',
+            'property_method',
+            'static_method',
+            'class_method',
+            'method',
+            'protected_property_method',
+            'protected_static_method',
+            'protected_class_method',
+            'protected_method',
+            'private_property_method',
+            'private_static_method',
+            'private_class_method',
+            'private_method',
+        ],
+    )
+    assert len(errors) == 2
 
 
 def test_configurable_order_correct_order():
@@ -55,6 +135,7 @@ def test_configurable_order_wrong_order():
             'property_method',
             'method',
             '__str__',
+            'protected_method',
             'private_method',
         ],
     )
@@ -76,7 +157,7 @@ def test_child_attributes_fallback_to_parent_if_not_configured():
 def test_ignore_base_attribute_and_subattributes_if_not_configured():
     errors = run_validator_for_test_file(
         'configurable.py',
-        attributes_order=['property_method', 'private_property_method'],
+        attributes_order=['property_method', 'protected_property_method', 'private_property_method'],
     )
     assert len(errors) == 1
 
@@ -92,7 +173,8 @@ def test_always_require_fixed_attributes():
 def test_warning_if_both_strict_mode_and_configurable_order_defined():
     with warnings.catch_warnings(record=True) as w:
         run_validator_for_test_file(
-            'ok.py', strict_mode=True, attributes_order=['nested_class', 'field', 'method'])
+            'ok.py', strict_mode=True, attributes_order=['nested_class', 'field', 'method']
+        )
         assert len(w) == 1
 
 
