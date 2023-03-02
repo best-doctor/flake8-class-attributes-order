@@ -119,6 +119,7 @@ CONFIGURABLE_NODE_TYPES: Final[Mapping[str, List[str]]] = {
 def get_node_weights(options=None) -> Mapping[str, int]:
     use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
     class_attributes_order = options.class_attributes_order
+    ignore_docstring = bool(options.ignore_docstring)
 
     if use_strict_mode and class_attributes_order:
         warnings.warn(
@@ -142,10 +143,14 @@ def get_node_weights(options=None) -> Mapping[str, int]:
                     node_type_weights[node_type] = node_to_configured_weight[node_type_or_supertype]
                     break
 
-        return node_type_weights
+        result = node_type_weights
 
-    if use_strict_mode:
+    elif use_strict_mode:
 
-        return STRICT_NODE_TYPE_WEIGHTS
+        result = STRICT_NODE_TYPE_WEIGHTS
+    else:
+        result = NON_STRICT_NODE_TYPE_WEIGHTS
 
-    return NON_STRICT_NODE_TYPE_WEIGHTS
+    if ignore_docstring:
+        result.pop('docstring')
+    return result
