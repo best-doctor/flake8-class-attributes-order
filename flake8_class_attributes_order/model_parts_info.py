@@ -80,34 +80,37 @@ def get_funcdef_type(child_node) -> str:
     return funcdef
 
 
-def get_funcdef_type_by_decorator_info(node, decorator_names_to_types_map: dict[str, str]) -> str | None:
+def get_funcdef_type_by_decorator_info(  # noqa: CFQ004
+    node,
+    decorator_names_to_types_map: dict[str, str],
+) -> str | None:
     for decorator_info in node.decorator_list:
         if (
             isinstance(decorator_info, ast.Name)
             and decorator_info.id in decorator_names_to_types_map
         ):
-
             if node.name.startswith('__'):
-                funcdef = decorator_names_to_types_map[f'private_{decorator_info.id}']
-            elif node.name.startswith('_'):
-                funcdef = decorator_names_to_types_map[f'protected_{decorator_info.id}']
-            else:
-                funcdef = decorator_names_to_types_map[decorator_info.id]
-            return funcdef
+                return decorator_names_to_types_map[f'private_{decorator_info.id}']
+            if node.name.startswith('_'):
+                return decorator_names_to_types_map[f'protected_{decorator_info.id}']
+            return decorator_names_to_types_map[decorator_info.id]
     return None
 
 
-def get_funcdef_type_by_node_name(node, special_methods_names: set[str]) -> str:
-    funcdef_type = 'method'
+def get_funcdef_type_by_node_name(  # noqa: CFQ004
+    node,
+    special_methods_names: set[str],
+    default_type: str = 'method',
+) -> str:
     if node.name in special_methods_names:
-        funcdef_type = node.name
-    elif node.name.startswith('__') and node.name.endswith('__'):
-        funcdef_type = 'magic_method'
-    elif node.name.startswith('__'):
-        funcdef_type = 'private_method'
-    elif node.name.startswith('_'):
-        funcdef_type = 'protected_method'
-    return funcdef_type
+        return node.name
+    if node.name.startswith('__') and node.name.endswith('__'):
+        return 'magic_method'
+    if node.name.startswith('__'):
+        return 'private_method'
+    if node.name.startswith('_'):
+        return 'protected_method'
+    return default_type
 
 
 def is_caps_lock_str(var_name: str) -> bool:

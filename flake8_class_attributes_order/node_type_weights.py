@@ -4,7 +4,7 @@ from typing import List, Mapping, Dict
 from typing_extensions import Final
 
 
-NON_STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
+NON_STRICT_NODE_TYPE_WEIGHTS: Final[dict[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
@@ -40,7 +40,7 @@ NON_STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
     'private_method': 27,
 }
 
-STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
+STRICT_NODE_TYPE_WEIGHTS: Final[dict[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
@@ -119,7 +119,7 @@ CONFIGURABLE_NODE_TYPES: Final[Mapping[str, List[str]]] = {
 def get_node_weights(options=None) -> Mapping[str, int]:
     use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
     class_attributes_order = options.class_attributes_order
-    ignore_docstring = bool(options.ignore_docstring)
+    ignore_docstring = hasattr(options, 'ignore_docstring') and bool(options.ignore_docstring)
 
     if use_strict_mode and class_attributes_order:
         warnings.warn(
