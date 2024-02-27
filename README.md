@@ -26,6 +26,7 @@ Default configuration checks for the following order of attributes:
 - `@staticmethod`
 - `@classmethod`
 - other methods
+- protected methods
 - private methods
 
 If the order is broken, validator will report on it.
@@ -65,6 +66,10 @@ There is another preconfigured order that is more strict on private subtypes:
 - `@staticmethod`
 - `@classmethod`
 - other methods
+- protected `@property`
+- protected `@staticmethod`
+- protected `@classmethod`
+- other protected methods
 - private `@property`
 - private `@staticmethod`
 - private `@classmethod`
@@ -94,37 +99,44 @@ class_attributes_order =
     static_method,
     class_method,
     method,
+    protected_method,
     private_method
 ```
 
 Configurable options:
 
-| Option                |               Description           | Fallbacks to\* |
-|:---------------------:|:-----------------------------------:|:--------------:|
-|meta_class             |class Meta: (e.g. in Django projects)| nested_class   |
-|nested_class           |Other nested classes                 | None\*         |
-|constant               |SOME_CONSTANTS                       | field          |
-|outer_field            |some = models.ForeignKey etc.        | field          |
-|field                  |Other fields                         | None           |
-|`__new__`              |`__new__`                            | magic_method   |
-|`__init__`             |`__init__`                           | magic_method   |
-|`__post_init__`        |`__post_init__`                      | magic_method   |
-|`__str__`              |`__str__`                            | magic_method   |
-|magic_method           |Other magic methods                  | method         |
-|save                   |def save(...)                        | method         |
-|delete                 |def delete(...)                      | method         |
-|property_method        |@property/@cached_property etc.      | method         |
-|private_property_method|@property/@cached_property with _    | property_method|
-|static_method          |@staticmethod                        | method         |
-|private_static_method  |@staticmethod beginning with _       | static_method  |
-|class_method           |@classmethod                         | method         |
-|private_class_method   |@classmethod beginning with _        | class_method   |
-|private_method         |other methods beginning with _       | method         |
-|method                 |other methods                        | None           |
+|          Option           |              Description               | Fallbacks to\*  |
+|:-------------------------:|:--------------------------------------:|:---------------:|
+|        meta_class         | class Meta: (e.g. in Django projects)  |  nested_class   |
+|       nested_class        |          Other nested classes          |     None\*      |
+|         constant          |             SOME_CONSTANTS             |      field      |
+|        outer_field        |     some = models.ForeignKey etc.      |      field      |
+|           field           |              Other fields              |      None       |
+|      protected field      |      Other field starting with _       |      field      |
+|       private field       |      Other field starting with __      |      field      |
+|         `__new__`         |               `__new__`                |  magic_method   |
+|        `__init__`         |               `__init__`               |  magic_method   |
+|      `__post_init__`      |            `__post_init__`             |  magic_method   |
+|         `__str__`         |               `__str__`                |  magic_method   |
+|       magic_method        |          Other magic methods           |     method      |
+|           save            |             def save(...)              |     method      |
+|          delete           |            def delete(...)             |     method      |
+|      property_method      |    @property/@cached_property etc.     |     method      |
+| protected_property_method | @property/@cached_property etc. with _ | property_method |
+|  private_property_method  |   @property/@cached_property with __   | property_method |
+|       static_method       |             @staticmethod              |     method      |
+|  protected_static_method  |     @staticmethod beginning with _     |  static_method  |
+|   private_static_method   |    @staticmethod beginning with __     |  static_method  |
+|       class_method        |              @classmethod              |     method      |
+|  protected_class_method   |     @classmethod beginning with _      |  class_method   |
+|   private_class_method    |     @classmethod beginning with __     |  class_method   |
+|      private_method       |    other methods beginning with __     |     method      |
+|     protected_method      |     other methods beginning with _     |     method      |
+|          method           |             other methods              |      None       |
 
 \* if not provided, will use its supertype order
 
-\*\*  if not defined, such base types and all their subtypes (unless defined)
+\*\* if not defined, such base types and all their subtypes (unless defined)
 will be ignored during validation. It's recommended
 to set at least `nested_class`, `field` and `method`
 

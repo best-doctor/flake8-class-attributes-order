@@ -32,6 +32,12 @@ class ClassAttributesOrderChecker:
             help='Comma-separated list of class attributes to '
                  'configure order manually',
         )
+        parser.add_option(
+            '--ignore-docstring',
+            action='store_true',
+            parse_from_config=True,
+            help='Ignore docstring errors whenever they appear',
+        )
 
     @classmethod
     def parse_options(cls, options: str) -> None:

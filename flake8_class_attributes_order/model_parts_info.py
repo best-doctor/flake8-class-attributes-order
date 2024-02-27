@@ -64,29 +64,53 @@ def get_funcdef_type(child_node) -> str:
         'staticmethod': 'static_method',
         'classmethod': 'class_method',
 
+        'protected_property': 'protected_property_method',
+        'protected_cached_property': 'protected_property_method',
+        'protected_staticmethod': 'protected_static_method',
+        'protected_classmethod': 'protected_class_method',
+
         'private_property': 'private_property_method',
         'private_cached_property': 'private_property_method',
         'private_staticmethod': 'private_static_method',
         'private_classmethod': 'private_class_method',
     }
-    for decorator_info in child_node.decorator_list:
+    funcdef = get_funcdef_type_by_decorator_info(child_node, decorator_names_to_types_map)
+    if not funcdef:
+        funcdef = get_funcdef_type_by_node_name(child_node, special_methods_names)
+    return funcdef
+
+
+def get_funcdef_type_by_decorator_info(  # noqa: CFQ004
+    node,
+    decorator_names_to_types_map: dict[str, str],
+) -> str | None:
+    for decorator_info in node.decorator_list:
         if (
             isinstance(decorator_info, ast.Name)
             and decorator_info.id in decorator_names_to_types_map
         ):
-
-            if child_node.name.startswith('_'):
+            if node.name.startswith('__'):
                 return decorator_names_to_types_map[f'private_{decorator_info.id}']
-
+            if node.name.startswith('_'):
+                return decorator_names_to_types_map[f'protected_{decorator_info.id}']
             return decorator_names_to_types_map[decorator_info.id]
-    funcdef_type = 'method'
-    if child_node.name in special_methods_names:
-        funcdef_type = child_node.name
-    elif child_node.name.startswith('__') and child_node.name.endswith('__'):
-        funcdef_type = 'magic_method'
-    elif child_node.name.startswith('_'):
-        funcdef_type = 'private_method'
-    return funcdef_type
+    return None
+
+
+def get_funcdef_type_by_node_name(  # noqa: CFQ004
+    node,
+    special_methods_names: set[str],
+    default_type: str = 'method',
+) -> str:
+    if node.name in special_methods_names:
+        return node.name
+    if node.name.startswith('__') and node.name.endswith('__'):
+        return 'magic_method'
+    if node.name.startswith('__'):
+        return 'private_method'
+    if node.name.startswith('_'):
+        return 'protected_method'
+    return default_type
 
 
 def is_caps_lock_str(var_name: str) -> bool:

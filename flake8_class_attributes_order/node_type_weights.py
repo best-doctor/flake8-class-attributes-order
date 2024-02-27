@@ -4,7 +4,7 @@ from typing import List, Mapping, Dict
 from typing_extensions import Final
 
 
-NON_STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
+NON_STRICT_NODE_TYPE_WEIGHTS: Final[dict[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
@@ -26,17 +26,21 @@ NON_STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
     'delete': 14,
 
     'property_method': 20,
+    'protected_property_method': 20,
     'private_property_method': 20,
     'static_method': 22,
+    'protected_static_method': 22,
     'private_static_method': 22,
     'class_method': 24,
+    'protected_class_method': 24,
     'private_class_method': 24,
     'method': 26,
     'magic_method': 27,
+    'protected_method': 27,
     'private_method': 27,
 }
 
-STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
+STRICT_NODE_TYPE_WEIGHTS: Final[dict[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
@@ -58,14 +62,18 @@ STRICT_NODE_TYPE_WEIGHTS: Final[Mapping[str, int]] = {
     'delete': 14,
 
     'property_method': 20,
-    'private_property_method': 21,
-    'static_method': 22,
-    'private_static_method': 23,
-    'class_method': 24,
-    'private_class_method': 25,
-    'method': 26,
-    'magic_method': 27,
-    'private_method': 28,
+    'protected_property_method': 21,
+    'private_property_method': 22,
+    'static_method': 23,
+    'protected_static_method': 24,
+    'private_static_method': 25,
+    'class_method': 26,
+    'protected_class_method': 27,
+    'private_class_method': 28,
+    'method': 29,
+    'protected_method': 30,
+    'magic_method': 31,
+    'private_method': 32,
 }
 
 FIXED_NODE_TYPE_WEIGHTS: Final[Dict[str, int]] = {
@@ -90,16 +98,20 @@ CONFIGURABLE_NODE_TYPES: Final[Mapping[str, List[str]]] = {
     '__post_init__': ['__post_init__', 'magic_method', 'method'],
     '__str__': ['__str__', 'magic_method', 'method'],
 
+    'protected_method': ['protected_method', 'method'],
     'private_method': ['private_method', 'method'],
 
     'save': ['save', 'method'],
     'delete': ['delete', 'method'],
 
     'property_method': ['property_method', 'method'],
+    'protected_property_method': ['protected_property_method', 'property_method', 'method'],
     'private_property_method': ['private_property_method', 'property_method', 'method'],
     'static_method': ['static_method', 'method'],
+    'protected_static_method': ['protected_static_method', 'static_method', 'method'],
     'private_static_method': ['private_static_method', 'static_method', 'method'],
     'class_method': ['class_method', 'method'],
+    'protected_class_method': ['protected_class_method', 'class_method', 'method'],
     'private_class_method': ['private_class_method', 'class_method', 'method'],
 }
 
@@ -107,6 +119,7 @@ CONFIGURABLE_NODE_TYPES: Final[Mapping[str, List[str]]] = {
 def get_node_weights(options=None) -> Mapping[str, int]:
     use_strict_mode = bool(options.use_class_attributes_order_strict_mode)
     class_attributes_order = options.class_attributes_order
+    ignore_docstring = hasattr(options, 'ignore_docstring') and bool(options.ignore_docstring)
 
     if use_strict_mode and class_attributes_order:
         warnings.warn(
@@ -130,10 +143,14 @@ def get_node_weights(options=None) -> Mapping[str, int]:
                     node_type_weights[node_type] = node_to_configured_weight[node_type_or_supertype]
                     break
 
-        return node_type_weights
+        result = node_type_weights
 
-    if use_strict_mode:
+    elif use_strict_mode:
 
-        return STRICT_NODE_TYPE_WEIGHTS
+        result = STRICT_NODE_TYPE_WEIGHTS
+    else:
+        result = NON_STRICT_NODE_TYPE_WEIGHTS
 
-    return NON_STRICT_NODE_TYPE_WEIGHTS
+    if ignore_docstring:
+        result.pop('docstring')
+    return result
