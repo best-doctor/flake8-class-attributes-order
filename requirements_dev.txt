@@ -29,3 +29,4 @@ flake8-if-statements==0.1.0
 flake8-functions==0.0.7
 flake8-annotations-coverage==0.0.4
 flake8-expression-complexity==0.0.7
+packaging==21.3
