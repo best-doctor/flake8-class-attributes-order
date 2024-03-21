@@ -1,5 +1,5 @@
 import ast
-from typing import Mapping
+from typing import Mapping, Set, Dict, Union
 
 
 def get_model_parts_info(model_ast, weights: Mapping[str, int]):
@@ -82,8 +82,8 @@ def get_funcdef_type(child_node) -> str:
 
 def get_funcdef_type_by_decorator_info(  # noqa: CFQ004
     node,
-    decorator_names_to_types_map: dict[str, str],
-) -> str | None:
+    decorator_names_to_types_map: Dict[str, str],
+) -> Union[str, None]:
     for decorator_info in node.decorator_list:
         if (
             isinstance(decorator_info, ast.Name)
@@ -99,7 +99,7 @@ def get_funcdef_type_by_decorator_info(  # noqa: CFQ004
 
 def get_funcdef_type_by_node_name(  # noqa: CFQ004
     node,
-    special_methods_names: set[str],
+    special_methods_names: Set[str],
     default_type: str = 'method',
 ) -> str:
     if node.name in special_methods_names:

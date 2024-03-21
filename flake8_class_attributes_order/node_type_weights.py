@@ -4,7 +4,7 @@ from typing import List, Mapping, Dict
 from typing_extensions import Final
 
 
-NON_STRICT_NODE_TYPE_WEIGHTS: Final[dict[str, int]] = {
+NON_STRICT_NODE_TYPE_WEIGHTS: Final[Dict[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
@@ -40,7 +40,7 @@ NON_STRICT_NODE_TYPE_WEIGHTS: Final[dict[str, int]] = {
     'private_method': 27,
 }
 
-STRICT_NODE_TYPE_WEIGHTS: Final[dict[str, int]] = {
+STRICT_NODE_TYPE_WEIGHTS: Final[Dict[str, int]] = {
     'docstring': 0,
     'pass': 1,
     'meta_class': 2,
