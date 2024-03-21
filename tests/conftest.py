@@ -17,7 +17,7 @@ def run_validator_for_test_file(filename, max_annotations_complexity=None,
         raw_content = file_handler.read()
     tree = ast.parse(raw_content)
 
-    options = OptionManager('flake8_class_attributes_order', '0.2.3')
+    options = OptionManager('flake8_class_attributes_order', '0.2.0')
     options.use_class_attributes_order_strict_mode = strict_mode
     options.class_attributes_order = attributes_order
     ClassAttributesOrderChecker.parse_options(options)

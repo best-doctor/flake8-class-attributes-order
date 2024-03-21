@@ -1,5 +1,5 @@
 
-### Version 0.2.3
+### Version 0.2.0
 - Add protected functions support
 
 ### Version 0.1.3
