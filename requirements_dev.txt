@@ -15,7 +15,7 @@ flake8-quotes==3.0.0
 flake8-string-format==0.3.0
 flake8-todo==0.7
 mypy==0.921
-safety==1.10.3
+safety==2.2.0
 flake8-eradicate==1.2.0
 flake8-fixme==1.1.1
 flake8-annotations-complexity==0.0.6
