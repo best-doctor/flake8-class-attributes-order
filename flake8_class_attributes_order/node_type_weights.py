@@ -122,7 +122,7 @@ def get_node_weights(options=None) -> Mapping[str, int]:
     ignore_docstring = hasattr(options, 'ignore_docstring') and bool(options.ignore_docstring)
 
     if use_strict_mode and class_attributes_order:
-        warnings.warn(
+        warnings.warn(  # noqa: B028
             'Both options that are exclusive provided: --use-class-attributes-order-strict-mode '
             'and --class-attributes-order. Order defined in --class-attributes-order will be used '
             'to check against.',
