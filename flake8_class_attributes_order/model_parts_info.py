@@ -1,12 +1,13 @@
 import ast
-from typing import Mapping, Set, Dict, Union
+from collections.abc import Callable
+from typing import Mapping, Set, Dict, Union, Optional
 
 
 def get_model_parts_info(model_ast, weights: Mapping[str, int]):
     parts_info = []
     for child_node in model_ast.body:
         node_type = get_model_node_type(child_node)
-        if node_type in weights:
+        if node_type and node_type in weights:
             parts_info.append({
                 'model_name': model_ast.name,
                 'node': child_node,
@@ -16,13 +17,13 @@ def get_model_parts_info(model_ast, weights: Mapping[str, int]):
     return parts_info
 
 
-def get_model_node_type(child_node) -> str:
+def get_model_node_type(child_node) -> Optional[str]:
     direct_node_types_mapping = [
         (ast.If, lambda n: 'if'),
         (ast.Pass, lambda n: 'pass'),
         ((ast.Assign, ast.AnnAssign), lambda n: get_assighment_type(n)),
         ((ast.FunctionDef, ast.AsyncFunctionDef), lambda n: get_funcdef_type(n)),
-        (ast.Expr, lambda n: 'docstring' if isinstance(n.value, ast.Str) else 'expression'),
+        (ast.Expr, lambda n: 'docstring' if isinstance(n.value, ast.Constant) else 'expression'),
         (ast.ClassDef, lambda n: 'meta_class' if child_node.name == 'Meta' else 'nested_class'),
     ]
     for type_or_type_tuple, type_getter in direct_node_types_mapping:
@@ -49,7 +50,7 @@ def get_assighment_type(child_node) -> str:
     return assighment_type
 
 
-def get_funcdef_type(child_node) -> str:
+def get_funcdef_type(child_node: Union[ast.FunctionDef, ast.AsyncFunctionDef]) -> str:
     special_methods_names = {
         '__new__',
         '__init__',
@@ -61,16 +62,22 @@ def get_funcdef_type(child_node) -> str:
     decorator_names_to_types_map = {
         'property': 'property_method',
         'cached_property': 'property_method',
+        'setter': 'property_method',
+        'deleter': 'property_method',
         'staticmethod': 'static_method',
         'classmethod': 'class_method',
 
         'protected_property': 'protected_property_method',
         'protected_cached_property': 'protected_property_method',
+        'protected_setter': 'protected_property_method',
+        'protected_deleter': 'protected_property_method',
         'protected_staticmethod': 'protected_static_method',
         'protected_classmethod': 'protected_class_method',
 
         'private_property': 'private_property_method',
         'private_cached_property': 'private_property_method',
+        'private_setter': 'private_property_method',
+        'private_deleter': 'private_property_method',
         'private_staticmethod': 'private_static_method',
         'private_classmethod': 'private_class_method',
     }
@@ -81,24 +88,28 @@ def get_funcdef_type(child_node) -> str:
 
 
 def get_funcdef_type_by_decorator_info(  # noqa: CFQ004
-    node,
+    node: Union[ast.FunctionDef, ast.AsyncFunctionDef],
     decorator_names_to_types_map: Dict[str, str],
 ) -> Union[str, None]:
     for decorator_info in node.decorator_list:
-        if (
-            isinstance(decorator_info, ast.Name)
-            and decorator_info.id in decorator_names_to_types_map
-        ):
+        if isinstance(decorator_info, ast.Name):
+            decorator_id = decorator_info.id
+        elif isinstance(decorator_info, ast.Attribute):
+            decorator_id = decorator_info.attr
+        else:
+            continue
+
+        if decorator_id in decorator_names_to_types_map:
             if node.name.startswith('__'):
-                return decorator_names_to_types_map[f'private_{decorator_info.id}']
+                return decorator_names_to_types_map[f'private_{decorator_id}']
             if node.name.startswith('_'):
-                return decorator_names_to_types_map[f'protected_{decorator_info.id}']
-            return decorator_names_to_types_map[decorator_info.id]
+                return decorator_names_to_types_map[f'protected_{decorator_id}']
+            return decorator_names_to_types_map[decorator_id]
     return None
 
 
 def get_funcdef_type_by_node_name(  # noqa: CFQ004
-    node,
+    node: Union[ast.FunctionDef, ast.AsyncFunctionDef],
     special_methods_names: Set[str],
     default_type: str = 'method',
 ) -> str:

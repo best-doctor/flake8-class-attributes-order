@@ -16,6 +16,10 @@ def test_ok_cases_produces_no_errors():
     assert not run_validator_for_test_file('ok.py')
 
 
+def test_properties_produces_no_errors():
+    assert not run_validator_for_test_file('properties.py')
+
+
 def test_strict_mode_improper_order():
     errors = run_validator_for_test_file(
         'strict_errored.py', strict_mode=True
