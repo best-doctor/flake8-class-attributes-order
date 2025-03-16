@@ -1,6 +1,5 @@
 import ast
-from collections.abc import Callable
-from typing import Mapping, Set, Dict, Union, Optional
+from typing import Dict, Mapping, Optional, Set, Union
 
 
 def get_model_parts_info(model_ast, weights: Mapping[str, int]):

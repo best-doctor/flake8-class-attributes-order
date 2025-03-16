@@ -2,8 +2,6 @@ import ast
 import os
 from argparse import Namespace
 
-from flake8.options.manager import OptionManager
-
 from flake8_class_attributes_order.checker import ClassAttributesOrderChecker
 
 

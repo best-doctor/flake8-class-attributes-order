@@ -18,7 +18,7 @@ mypy==1.13.0
 safety==3.2.13
 flake8-eradicate==1.5.0
 flake8-fixme==1.1.1
-# flake8-annotations-complexity==0.0.8
+flake8-annotations-complexity==0.1.0
 flake8-variables-names==0.0.6
 -e .
 flake8-broken-line==1.0.0
