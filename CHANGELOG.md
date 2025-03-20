@@ -1,5 +1,10 @@
 # Changelog
 
+## Version 0.3.0 (2025-03-20)
+
+- Add support for setter/deleter methods
+- Drop Python 3.8 support
+
 ## Version 0.2.0 (2024-02-21)
 
 - Add protected functions support
